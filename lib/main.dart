@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'quote.dart';
 void main() {
   runApp(const MyApp());
@@ -21,6 +22,64 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Container(
+          child: Stack(children: [
+            Image.asset("assets/background.jpg",
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              fit:BoxFit.cover,
+            ),
+            Container(
+              margin: EdgeInsets.only(top:50),
+              child: Column(
+                children: [
+                  Center(
+                    child: Text("Quotes",
+
+                      style: GoogleFonts.raleway(
+                        color: Colors.white,
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20,vertical: 5
+                        ),
+                        margin: EdgeInsets.only(left: 20),
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                          borderRadius: BorderRadius.circular(15)
+
+                        ),
+                        child: Text("Business",
+                          style: GoogleFonts.poppins(
+                            color: Colors.black,
+                            fontWeight:FontWeight.bold ,
+                            fontSize: 18,
+                          ),
+
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
+            )
+      
+      
+      
+          ],),
+        ),
+      
+      ),
     );
   }
 }
