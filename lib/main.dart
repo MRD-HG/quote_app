@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'quote.dart';
+import 'quote_service.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -13,72 +14,158 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Quote> quotes=[
-    Quote(text: 'The greatest glory in living lies not in never falling, but in rising every time we fall.', author: 'Nelson Mandela'),
-    Quote(text: 'The way to get started is to quit talking and begin doing', author: 'Walt Disney'),
-    Quote(text: "Your time is limited, so don't waste it living someone else's life. Don't be trapped by dogma – which is living with the results of other people's thinking", author: 'Steve Jobs'),
+  final QuoteService _quoteService = QuoteService();
+  List<String> _quotes = [];
+  List<String> _categories = ['Business', 'Love', 'Mindset', 'Happiness'];
+  String _selectedCategory = 'Business';
+  int _page = 1;
+  bool _isLoading = false;
+  final ScrollController _scrollController = ScrollController();
 
-  ];
+  @override
+  void initState() {
+    super.initState();
+    fetchQuotes();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && !_isLoading) {
+        fetchQuotes(); // Fetch more quotes when user scrolls to the bottom
+      }
+    });
+  }
+
+  // Fetch quotes for the selected category and current page
+  void fetchQuotes() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      List<String> quotes = await _quoteService.fetchQuotesByCategory(_selectedCategory, _page);
+      setState(() {
+        _quotes.addAll(quotes);
+        _page++;
+      });
+    } catch (e) {
+      setState(() {
+        _quotes = ["Failed to fetch quotes: $e"];
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Called when a category is selected
+  void selectCategory(String category) {
+    setState(() {
+      _selectedCategory = category;
+      _page = 1;
+      _quotes.clear();
+    });
+    fetchQuotes();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: Container(
-          child: Stack(children: [
-            Image.asset("assets/background.jpg",
+        body: Stack(
+          children: [
+            // Background image
+            Image.asset(
+              "assets/background.jpg",
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
-              fit:BoxFit.cover,
+              fit: BoxFit.cover,
             ),
             Container(
-              margin: EdgeInsets.only(top:50),
+              margin: const EdgeInsets.only(top: 50),
               child: Column(
                 children: [
-                  Center(
-                    child: Text("Quotes",
-
-                      style: GoogleFonts.raleway(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1
+                  // Header: Category Tabs
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 20),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: _categories.map((category) {
+                          final isSelected = _selectedCategory == category;
+                          return GestureDetector(
+                            onTap: () => selectCategory(category),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              margin: const EdgeInsets.only(right: 10),
+                              decoration: BoxDecoration(
+                                color: isSelected ? Colors.blue : Colors.white.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                category,
+                                style: GoogleFonts.poppins(
+                                  color: isSelected ? Colors.white : Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,vertical: 5
-                        ),
-                        margin: EdgeInsets.only(left: 20),
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                          borderRadius: BorderRadius.circular(15)
-
-                        ),
-                        child: Text("Business",
-                          style: GoogleFonts.poppins(
-                            color: Colors.black,
-                            fontWeight:FontWeight.bold ,
-                            fontSize: 18,
+                  // Quotes Grid View
+                  Expanded(
+                    child: _isLoading && _quotes.isEmpty
+                        ? Center(child: CircularProgressIndicator())
+                        : GridView.builder(
+                      controller: _scrollController,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 20,
+                        mainAxisSpacing: 20,
+                        childAspectRatio: 1.5,
+                      ),
+                      padding: const EdgeInsets.all(20),
+                      itemCount: _quotes.length,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          elevation: 5,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
                           ),
-
-                        ),
-                      )
-                    ],
-                  )
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Center(
+                              child: Text(
+                                _quotes[index],
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  // Show loading spinner at the bottom when fetching more quotes
+                  if (_isLoading && _quotes.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  ],
                 ],
               ),
-            )
-      
-      
-      
-          ],),
+            ),
+          ],
         ),
-      
       ),
     );
   }
