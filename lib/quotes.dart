@@ -72,9 +72,10 @@ class _QuotesState extends State<Quotes> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Quotes App', style: GoogleFonts.raleway(fontWeight: FontWeight.bold)),
+        title: Text('Quotes App', style: GoogleFonts.raleway(fontWeight: FontWeight.bold,color: Colors.white)),
         backgroundColor: Colors.black,
         leading: IconButton(
+          color: Colors.white,
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
@@ -102,7 +103,7 @@ class _QuotesState extends State<Quotes> {
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         margin: const EdgeInsets.only(right: 10),
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.blue : Colors.white.withOpacity(0.7),
+                          color: isSelected ? Colors.white30 : Colors.white,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -184,7 +185,6 @@ class _QuotesState extends State<Quotes> {
   }
 }
 
-// Quote Detail Page
 class QuoteDetail extends StatelessWidget {
   final String quote;
   const QuoteDetail({required this.quote, Key? key}) : super(key: key);
@@ -192,22 +192,98 @@ class QuoteDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Quote Detail', style: GoogleFonts.raleway()),
-        backgroundColor: Colors.black,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text(
-            quote,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+      body: Stack(
+        children: [
+
+
+          // Content
+          SafeArea(
+            child: Column(
+              children: [
+                // Back button
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 50),
+                // Quote content
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.85),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Quote text
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Text(
+                              '"$quote"',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.lora(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        // Decorative separator
+                        Divider(
+                          color: Colors.black.withOpacity(0.6),
+                          thickness: 1.5,
+                          indent: 50,
+                          endIndent: 50,
+                        ),
+                        const SizedBox(height: 10),
+                        // Attribution or footer text
+                        Text(
+                          'Find inspiration in every word.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 50),
+              ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
